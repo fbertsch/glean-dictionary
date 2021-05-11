@@ -15,7 +15,7 @@
   };
 </script>
 
-<style>
+<!-- <style>
   .mzp-c-notification-bar {
     display: flex;
     align-items: center;
@@ -36,7 +36,7 @@
   .success {
     background-color: $color-green-20;
   }
-</style>
+</style> -->
 
 <div class="mzp-c-notification-bar mzp-t-{status} {status}" transition:fade>
   <svelte:component this={icons[status]} />

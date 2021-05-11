@@ -1,5 +1,4 @@
 <script>
-  import { getContext } from "svelte";
   import {pageState} from "$lib/state/stores"
   import SchemaNode from "./SchemaNode.svelte";
   import FilterInput from "./FilterInput.svelte";
@@ -13,7 +12,6 @@
   // const searchText = getContext("searchText");
   $: {
     const filterTerms = [$pageState.search]
-    console.log($pageState.search, filterTerms)
     const addVisibility = (node, parentNodeNames = ["__root__"]) => {
       let modifiedNode = node;
       let parentNames = [...parentNodeNames];
@@ -46,7 +44,7 @@
   }
 </script>
 
-<style>
+<!-- <style>
   .schema-viewer {
     margin-top: 2rem;
     .schema-browser {
@@ -58,7 +56,7 @@
       margin-right: auto;
     }
   }
-</style>
+</style> -->
 
 <div class="schema-viewer">
   <PageTitle text={'Schema'} />

@@ -2,11 +2,11 @@
   export let text;
 </script>
 
-<style>
+<!-- <style>
   h1 {
     @include text-title-sm;
   }
-</style>
+</style> -->
 
 <slot>
   <h1>

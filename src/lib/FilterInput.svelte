@@ -3,12 +3,9 @@
 
   export let placeHolder;
 
-  $: {
-    console.log($pageState)
-  }
 </script>
 
-<style>
+<!-- <style>
   div {
     margin-top: $spacing-xs;
     margin-bottom: $spacing-xs;
@@ -19,7 +16,7 @@
     border-radius: 15px;
     border: 1px solid #000;
   }
-</style>
+</style> -->
 
 <div>
   <input

@@ -59,7 +59,7 @@ let filteredItems;
   }
 </script>
 
-<style>
+<!-- <style>
   .item-browser {
     a {
       text-decoration: none;
@@ -107,7 +107,7 @@ let filteredItems;
       display: inline;
     }
   }
-</style>
+</style> -->
 
 {#if !items.length}
   <p>Currently, there are no {itemType} available for {items.name}</p>

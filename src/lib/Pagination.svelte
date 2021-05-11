@@ -52,7 +52,7 @@
   }
 </script>
 
-<style>
+<!-- <style>
   .pagination-position {
     margin-top: $spacing-md;
   }
@@ -81,7 +81,7 @@
       cursor: not-allowed;
     }
   }
-</style>
+</style> -->
 
 <div class="pagination-position">
   <p>

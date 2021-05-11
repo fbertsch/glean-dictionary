@@ -2,7 +2,7 @@
   export let links;
 </script>
 
-<style>
+<!-- <style>
   ol {
     display: flex;
     li {
@@ -19,7 +19,7 @@
       }
     }
   }
-</style>
+</style> -->
 
 <ol>
   {#each links as link}

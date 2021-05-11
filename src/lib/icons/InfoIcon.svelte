@@ -1,10 +1,10 @@
-<style>
+<!-- <style>
   svg {
     display: inline-block;
     width: 15px;
     color: $color-light-gray-50;
   }
-</style>
+</style> -->
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
