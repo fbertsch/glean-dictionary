@@ -1,9 +1,11 @@
 <script>
-  import { getContext } from "svelte";
+  import { pageState } from "$lib/state/stores";
 
   export let placeHolder;
 
-  const searchText = getContext("searchText");
+  $: {
+    console.log($pageState)
+  }
 </script>
 
 <style>
@@ -24,5 +26,5 @@
     {placeHolder}
     type="search"
     id="filter-input"
-    bind:value={$searchText} />
+    bind:value={$pageState.search} />
 </div>

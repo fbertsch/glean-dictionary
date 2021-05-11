@@ -11,7 +11,7 @@
   import Pill from "./Pill.svelte";
 
   import { isExpired } from "../state/metrics";
-
+  import {pageState} from "../lib/state/stores"
   let DEFAULT_ITEMS_PER_PAGE = 20;
 
   export let appName;
@@ -20,22 +20,21 @@
 
   export let showFilter = true;
 
-  let filteredItems = items.filter((item) => !isExpired(item.expires));
+let filteredItems;
   let pagedItems;
   let paginated = true;
 
   let currentPage = writable(1);
   setContext("currentPage", currentPage);
 
-  const searchText = getContext("searchText");
+  pageState.set({... $pageState, search: ""})
+
   const goToPage = (page, perPage = DEFAULT_ITEMS_PER_PAGE) => {
     pagedItems =
       filteredItems.length > 0
         ? chunk([...filteredItems], perPage)[page - 1]
         : [];
   };
-
-  const showExpired = getContext("showExpired");
 
   $: {
     if (paginated) {
@@ -45,13 +44,13 @@
     }
   }
 
-  // re-filter items when showExpired or $searchText changes
+  // re-filter items when showExpired or $search changes
   $: {
-    const shownItems = $showExpired
+    const shownItems = $pageState.showExpired
       ? items
       : items.filter((item) => !isExpired(item.expires));
     filteredItems = shownItems.filter((item) =>
-      item.name.includes($searchText)
+      item.name.includes($pageState.search)
     );
     // show the first page of result
     currentPage.set(1);
@@ -116,7 +115,7 @@
   {#if itemType === 'metrics'}
     <span class="expire-checkbox">
       <label>
-        <input type="checkbox" bind:checked={$showExpired} />
+        <input type="checkbox" bind:checked={$pageState.showExpired} />
         Show expired metrics
       </label>
       <label>

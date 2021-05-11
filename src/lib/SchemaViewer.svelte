@@ -1,5 +1,6 @@
 <script>
   import { getContext } from "svelte";
+  import {pageState} from "$lib/state/stores"
   import SchemaNode from "./SchemaNode.svelte";
   import FilterInput from "./FilterInput.svelte";
   import PageTitle from "./PageTitle.svelte";
@@ -9,13 +10,10 @@
 
   let nodesWithVisibility = [];
 
-  const searchText = getContext("searchText");
+  // const searchText = getContext("searchText");
   $: {
-    const filterTerms = $searchText
-      .trim()
-      .split(" ")
-      .filter((t) => t.length > 0);
-
+    const filterTerms = [$pageState.search]
+    console.log($pageState.search, filterTerms)
     const addVisibility = (node, parentNodeNames = ["__root__"]) => {
       let modifiedNode = node;
       let parentNames = [...parentNodeNames];
@@ -44,6 +42,7 @@
     };
 
     nodesWithVisibility = nodes.map((node) => addVisibility(node), filterTerms);
+
   }
 </script>
 
