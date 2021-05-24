@@ -7,10 +7,10 @@
     : `https://bugzilla.mozilla.org/show_bug.cgi?id=${ref}`;
 </script>
 
-<!-- <style>
+<style>
   a {
     display: block;
   }
-</style> -->
+</style>
 
 <a href={url} target="_blank"> {getBugLinkTitle(url)} </a>

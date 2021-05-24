@@ -12,8 +12,10 @@
 
 <script>
 	export let ping, app;
-	import { getBigQueryURL } from '$lib/state/urls';
+	import { pageState} from "$lib/state/stores";
+  	import { getBigQueryURL, getLookerExploreURL} from "$lib/state/urls";
 
+  import AppAlert from "$lib//AppAlert.svelte";
 	import AppVariantSelector from '$lib/AppVariantSelector.svelte';
 	import Commentary from '$lib/Commentary.svelte';
 	import HelpHoverable from '$lib/HelpHoverable.svelte';
@@ -22,19 +24,29 @@
 	import Markdown from '$lib/Markdown.svelte';
 	import PageTitle from '$lib/PageTitle.svelte';
 	import { PING_SCHEMA } from '$lib/data/schemas';
+	import AuthenticatedLink from "$lib/AuthenticatedLink.svelte";
 
 	let selectedAppVariant;
 	
+	$pageState = {
+    search: "",
+    showExpired: true,
+    ...$pageState,
+  	};
 </script>
 
 <svelte:head>
 	<title>{ping.name} | {app}</title>
 </svelte:head>
 
+{#if ping.origin && ping.origin !== app}
+<AppAlert
+  status="warning"
+  message={`This ping is defined by a library used by the application (__${ping.origin}__), rather than the application itself. For more details, see the definition.`} />
+{/if}
+
 <PageTitle text={ping.name} />
-<p>
-	<Markdown text={ping.description} />
-</p>
+<p><Markdown text={ping.description} /></p>
 
 <h2>Metadata</h2>
 <MetadataTable appName={app} item={ping} schema={PING_SCHEMA} />
@@ -62,11 +74,27 @@
 				</a>
 			</td>
 		</tr>
+		{#if ping.looker_explore}
+        <tr>
+          <td>
+            Looker
+            <HelpHoverable content={`Explore this ping in Mozilla's instance of Looker.`} />
+          </td>
+          <td>
+            <AuthenticatedLink
+              href={getLookerExploreURL(app, ping.name.replace(/-/g, '_'))}>
+              {ping.name}
+		  </AuthenticatedLink>
+            (all variants)
+          </td>
+        </tr>
+      {/if}
 	</table>
 {/if}
 
 <h2>Metrics</h2>
-<ItemList itemType="metrics" items={ping.metrics} appName={app} />
+<details>
+<ItemList itemType="metrics" items={ping.metrics} appName={app} /></details>
 
 <style>
 	@include metadata-table;

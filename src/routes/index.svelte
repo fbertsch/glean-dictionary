@@ -1,7 +1,5 @@
 <script context="module">
-	console.log('Starting 1')
 	export async function load({ fetch }) {
-		console.log('starting 2')
 		const res = await fetch('/data/apps.json');
 
 		if (res.ok) {
@@ -27,8 +25,8 @@
 	export let shownApps;
 
 	import FilterInput from '$lib/FilterInput.svelte';
+	import Markdown from "$lib/Markdown.svelte";
 	import { pageState } from '$lib/state/stores';
-	console.log("next")
 
 	const appLogos = {
 		browser: '/img/app-logos/browser.png',
@@ -38,7 +36,7 @@
 		lockwise: '/img/app-logos/lockwise.png',
 		nightly: '/img/app-logos/nightly.png',
 		reality: '/img/app-logos/reality.png',
-		others: '/img/app-logos/mozilla.png',
+		others: '/img/app-logos/moz.png',
 		dev: '/img/app-logos/dev.png'
 	};
 
@@ -69,27 +67,30 @@
 		}
 		return appLogos.others;
 	}
-
-	function isPlatform(app) {
-		if (includes(app, 'iOS') || includes(app, 'Android') || includes(app, 'Amazon')) {
-			return true;
-		}
-		return false;
-	}
-
-	function getPlatformLogo(app) {
-		if (includes(app, 'iOS')) {
-			return 'img/app-logos/platform-apple.jpg';
-		}
-		if (includes(app, 'Android')) {
-			return 'img/app-logos/platform-android.png';
-		}
-		if (includes(app, 'Amazon')) {
-			return 'img/app-logos/platform-amazon.png';
-		}
-		return undefined;
-	}
-	
+function isPlatform(app) {
+	console.log(app)
+    if (
+      app.includes("iOS") ||
+      app.includes("Android") ||
+      app.includes("Amazon")
+    ) {
+      return true;
+    }
+    return false;
+  }
+  function getPlatformLogo(app) {
+    if (app.includes("iOS")) {
+      return "/img/app-logos/platform-apple.jpg";
+    }
+    if (app.includes("Android")) {
+      return "/img/app-logos/platform-android.png";
+    }
+    if (app.includes("Amazon")) {
+      return "/img/app-logos/platform-amazon.png";
+    }
+    return undefined;
+  }
+  let showDeprecated = false;
 	// reset search
 	pageState.set({... $pageState, search: ""})
 	
@@ -100,43 +101,108 @@
 	<title>Glean Dictionary</title>
 </svelte:head>
 
-<div class="app-filter">
-	<FilterInput placeHolder="Search for an application" />
-</div>
+
+<div class="mzp-c-emphasis-box mzp-t-dark hero-box">
+	<h5>The Glean Dictionary documents the data collected by Mozilla projects that use <a href="https://mozilla.github.io/glean/">Glean</a>.</h5>
+	<p>Select a project to browse its data catalog. If you have questions, please ask in the <a
+		href="https://chat.mozilla.org/#/room/#glean-dictionary:mozilla.org">#glean-dictionary</a> channel on Mozilla's instance of Matrix.</p>
+
+	</div>
 {#if shownApps}
-	<div class="app-list">
+
+	<div class="mzp-c-emphasis-box">
+			<div class="app-filter">
+				<FilterInput placeHolder="Search for an application" width="90%"/>
+				<span id="deprecation-checkbox">
+					<label>
+					  <input type="checkbox" bind:checked={showDeprecated} />
+					  Show deprecated applications
+					</label>
+				  </span>
+			</div>
+		<div class="app-list">
 		{#each shownApps as app}
-			<div class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2" id="card">
+			<div class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
 				<a class="mzp-c-card-block-link" href={app.app_name} id="media-block">
-					<div class="mzp-c-card-media-wrapper" id="media-wrapper">
-						<img
-							class="mzp-c-card-imgage"
+					<img
+							class="mzp-c-card-image"
 							src={getAppLogo(app.app_name)}
 							alt="${app.canonical_app_name} Logo"
-							id="logo-img"
 						/>
-						<!-- TODO: add platform flags -->
-						<!-- {#if isPlatform(app.app_description)}
-							<div class="corner-flag" />
-							<img
-								class="platform-logo"
-								src={getPlatformLogo(app.app_description)}
-								alt="Platform Logo"
-							/>
-						{/if} -->
-					</div>
 					<div class="mzp-c-card-content">
-						<h2 class="mzp-c-card-title">{app.canonical_app_name}</h2>
-						<p class="mzp-c-card-meta" id="card-description">
-							{app.app_description}
-						</p>
+						<h6 class="mzp-c-card-title">{app.canonical_app_name}</h6>
+						<p>
+						<Markdown text={app.app_description} /></p>
 					</div>
 				</a>
 			</div>
 		{/each}
 	</div>
+	</div>
 {/if}
 
-<style lang="scss">
-@import "./apps.scss"
+<style>
+@import "src/app.scss";
+.hero-box {
+	text-align: center;
+}
+
+.mzp-c-card-image {
+    width: 100%;
+    background-color: $color-light-gray-20;
+}
+
+.app-filter {
+    margin: $spacing-sm;;
+    text-align: center;
+    #deprecation-checkbox {
+        display: block;
+        text-align: right;
+        label {
+            display: inline;
+        }
+    }
+}
+
+.app-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    grid-gap: $spacing-md;
+}
+
+.corner-flag {
+    border-top: 80px solid black;
+    border-right: 80px solid transparent;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+}
+.platform-logo {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+
+    width: 30px;
+    background-color: inherit;
+}
+#card {
+    max-width: 230px;
+    #media-block {
+        &:hover {
+            border-radius: 15px;
+        }
+    }
+    #media-wrapper {
+        border-radius: 15px;
+        #logo-img {
+            width: 230px;
+        }
+    }
+}
+#card-description {
+    font-size: 14px;
+}
+p {
+	@include text-body-sm;
+}
 </style>

@@ -15,6 +15,7 @@
 	export let metric, app;
 
 	import AppVariantSelector from '$lib/AppVariantSelector.svelte';
+	import AuthenticatedLink from "$lib/AuthenticatedLink.svelte";
 	import AppAlert from '$lib/AppAlert.svelte'
 	import Commentary from '$lib/Commentary.svelte';
 	import HelpHoverable from '$lib/HelpHoverable.svelte';
@@ -91,6 +92,12 @@
 	/>
 {/if}
 
+{#if metric.origin !== app}
+<AppAlert
+  status="warning"
+  message={`This metric is defined by a library used by the application (__${metric.origin}__), rather than the application itself. For more details, see the definition.`} />
+{/if}
+
 <PageTitle text={metric.name} />
 
 <Markdown text={metric.description} inline={false} />
@@ -106,74 +113,82 @@
 	{/each}
 	ping{metric.send_in_pings.length > 1 ? 's' : ''}.
 </p>
+
 <h2>Definition</h2>
 
 <MetadataTable appName={app} item={metric} schema={METRIC_DEFINITION_SCHEMA} />
 
 <h2>Metadata</h2>
-
 <MetadataTable appName={app} item={metric} schema={METRIC_METADATA_SCHEMA} />
-
-<h2>Commentary</h2>
-<Commentary item={metric} itemType={'metric'} />
-
+	
 <h2>Access</h2>
-
-{#if metric.variants.length > 1}
-	<AppVariantSelector bind:selectedAppVariant variants={metric.variants} />
-{/if}
-
-{#if selectedAppVariant}
-	<table>
-		<col />
-		<col />
-		<tr>
-			<td>
-				BigQuery
-				<HelpHoverable content={'The BigQuery representation of this metric.'} />
-			</td>
-			<td>
-				{#each selectedAppVariant.bigquery_names.stable_ping_table_names as [sendInPing, tableName]}
-					<div>
-						In
-						<a href={getBigQueryURL(app, selectedAppVariant.app_id, sendInPing)}>{tableName}</a>
-						<!-- Skip search string for event metrics as we can't directly lookup the columns in events tables -->
-						{#if selectedAppVariant.bigquery_names.metric_type !== 'event'}
-							as
-							<a
-								href={getBigQueryURL(
-									app,
-									selectedAppVariant.app_id,
-									sendInPing,
-									selectedAppVariant.bigquery_names.metric_table_name
-								)}
-							>
-								{selectedAppVariant.bigquery_names.metric_table_name}
-							</a>
-						{/if}
-					</div>
-				{/each}
-			</td>
-		</tr>
-		{#if getGlamUrl(selectedAppVariant)}
+	
+	{#if metric.variants.length > 1}
+		<AppVariantSelector bind:selectedAppVariant variants={metric.variants} />
+	{/if}
+	
+	{#if selectedAppVariant}
+		<table>
+			<col />
+			<col />
 			<tr>
 				<td>
-					GLAM
-					<HelpHoverable content={'View this metric in Glean Aggregated Metrics'} />
+					BigQuery
+					<HelpHoverable content={'The BigQuery representation of this metric.'} />
 				</td>
 				<td>
-					<a href={getGlamUrl(selectedAppVariant)}
-						>{selectedAppVariant.bigquery_names.glam_etl_name}</a
-					>
+					{#each selectedAppVariant.bigquery_names.stable_ping_table_names as [sendInPing, tableName]}
+						<div>
+							In
+							<a href={getBigQueryURL(app, selectedAppVariant.app_id, sendInPing)}>{tableName}</a>
+							<!-- Skip search string for event metrics as we can't directly lookup the columns in events tables -->
+							{#if selectedAppVariant.bigquery_names.metric_type !== 'event'}
+								as
+								<a
+									href={getBigQueryURL(
+										app,
+										selectedAppVariant.app_id,
+										sendInPing,
+										selectedAppVariant.bigquery_names.metric_table_name
+									)}
+								>
+									{selectedAppVariant.bigquery_names.metric_table_name}
+								</a>
+							{/if}
+						</div>
+					{/each}
 				</td>
 			</tr>
-		{/if}
-	</table>
-{/if}
+			{#if getGlamUrl(selectedAppVariant)}
+				<tr>
+					<td>
+						GLAM
+						<HelpHoverable
+						content={'View this metric in the Glean Aggregated Metrics (GLAM) dashboard'}
+						link={'https://docs.telemetry.mozilla.org/cookbooks/glam.html'} />
+					</td>
+					<td>
+						<AuthenticatedLink href={getGlamUrl(selectedAppVariant)}>
+							{selectedAppVariant.bigquery_names.glam_etl_name}
+						  </AuthenticatedLink>
+					</td>
+				</tr>
+			{/if}
+		</table>
+	{/if}
+
+	<h2>Commentary</h2>
+	<Commentary item={metric} itemType={'metric'} />
+
+	
 
 <style>
 	@include metadata-table;
 	h2 {
 		@include text-title-xs;
+	}
+	table {
+		/* min-width: 50%;
+		max-width: 60%; */
 	}
 </style>

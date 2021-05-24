@@ -12,11 +12,11 @@
   };
 </script>
 
-<!-- <style>
+<style>
   .main {
     display: inline-block;
   }
-</style> -->
+</style>
 
 <div class="main">
   {#if link.length}

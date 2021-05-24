@@ -5,6 +5,8 @@
   import ErrorIcon from "./icons/ErrorIcon.svelte";
   import SuccessIcon from "./icons/SuccessIcon.svelte";
 
+  import Markdown from "$lib/Markdown.svelte";
+
   export let status;
   export let message;
 
@@ -15,7 +17,7 @@
   };
 </script>
 
-<!-- <style>
+<style>
   .mzp-c-notification-bar {
     display: flex;
     align-items: center;
@@ -36,9 +38,11 @@
   .success {
     background-color: $color-green-20;
   }
-</style> -->
+</style>
 
 <div class="mzp-c-notification-bar mzp-t-{status} {status}" transition:fade>
   <svelte:component this={icons[status]} />
-  <div class="alert-text">{message}</div>
+  <div class="alert-text">
+    <Markdown text={message} inline={true} />
+  </div>
 </div>

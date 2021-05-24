@@ -2,10 +2,10 @@
   import { pageState } from "$lib/state/stores";
 
   export let placeHolder;
-
+  export let width;
 </script>
 
-<!-- <style>
+<style>
   div {
     margin-top: $spacing-xs;
     margin-bottom: $spacing-xs;
@@ -16,7 +16,7 @@
     border-radius: 15px;
     border: 1px solid #000;
   }
-</style> -->
+</style>
 
 <div>
   <input

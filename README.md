@@ -11,9 +11,9 @@ structure and governance, see:
 
 https://wiki.mozilla.org/Data/WorkingGroups/GleanDictionary
 
-You can play with an early version of the Glean Dictionary at:
+The production version of the Glean Dictionary is deployed at:
 
-https://dictionary.protosaur.dev
+https://dictionary.telemetry.mozilla.org
 
 ## Getting Started
 
@@ -38,6 +38,66 @@ npm run dev
 
 If that worked, you should be able to see a local version of Glean at
 http://localhost:5000
+
+You can speed up the "build data" step by appending the name of a set of
+application(s) you want to build metadata for. This can speed up the process
+considerably. For example, to build a metadata index for Fenix (Firefox for
+Android) only, try:
+
+```bash
+./scripts/build-glean-metadata.py fenix
+```
+
+## Storybook
+
+We use [Storybook](https://storybook.js.org/) for developing and validating
+Svelte components used throughout the app. To view the existing list of stories,
+run:
+
+```bash
+npm run storybook
+```
+
+### Storybook Snapshot Testing
+
+To give us more confidence that changes don't unintentionally break the UI, we
+run
+[storybook snapshot tests](https://storybook.js.org/docs/react/workflows/snapshot-testing).
+
+You can run them manually as follows:
+
+```bash
+npm run test:jest
+```
+
+If you intentionally made a change to a component that results in a change to
+the output of the storybook snapshots, you can re-generate them using the
+following command:
+
+```bash
+npm run test:jest -- -u
+```
+
+## Deployment
+
+The production version of the Glean Dictionary
+(https://dictionary.telemetry.mozilla.org) is deployed from the `production`
+branch on this repository, which usually corresponds to the latest GitHub
+release. To update the Glean Dictionary to the latest version, follow this
+procedure:
+
+- Do a quick test of https://glean-dictionary-dev.netlify.app to make sure it's
+  working as expected.
+- Create a new release, typically off of the `main` branch (you might find
+  [this iodide notebook](https://alpha.iodide.io/notebooks/6616/) useful for
+  creating a set of notes on what changed).
+- From a local checkout, update the `production` branch to be in sync with the
+  tag you just created, then push to the production branch. After the
+  integration tests pass, dictionary.telemetry.mozilla.org should be
+  automatically updated to the latest version.
+
+A version of the Glean Dictionary running the development branch (`main`) is
+accessible at https://glean-dictionary-dev.netlify.app/
 
 ## Contributing
 

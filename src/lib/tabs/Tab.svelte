@@ -9,7 +9,7 @@
   }
 </script>
 
-<!-- <style>
+<style>
   .title {
     @include text-title-3xs;
     border-top-width: 0px;
@@ -28,7 +28,7 @@
       cursor: pointer;
     }
   }
-</style> -->
+</style>
 
 <div
   class="title"

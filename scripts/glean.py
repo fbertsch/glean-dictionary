@@ -4,7 +4,6 @@ import logging
 from datetime import datetime
 from typing import List
 
-import cachecontrol
 import requests
 
 logger = logging.getLogger(__name__)
@@ -17,12 +16,17 @@ class _Cache:
     """
 
     def __init__(self):
-        self.sess = requests.Session()
-        self.sess.mount("http://", cachecontrol.CacheControlAdapter())
-        self.sess.mount("https://", cachecontrol.CacheControlAdapter())
+        self.cached_responses = {}
 
     def get(self, url: str):
-        return self.sess.get(url)
+        if self.cached_responses.get(url):
+            return self.cached_responses[url]
+
+        # pass a parameter to bypass any caching, which might give us stale
+        # data (probeinfo.telemetry.mozilla.org is currently using cloudfront)
+        resp = requests.get(url + f"?t={datetime.utcnow().isoformat()}")
+        self.cached_responses[url] = resp
+        return resp
 
     def get_json(self, url: str):
         return self.get(url).json()
@@ -42,7 +46,7 @@ class GleanMetric(GleanObject):
     Represents an individual Glean metric, as defined by probe scraper
     """
 
-    ALL_PINGS_KEYWORDS = ("all-pings", "all_pings", "glean_client_info")
+    ALL_PINGS_KEYWORDS = ("all-pings", "all_pings", "glean_client_info", "glean_internal_info")
 
     def __init__(self, identifier: str, definition: dict, *, ping_names: List[str] = None):
         self.identifier = identifier
@@ -50,7 +54,11 @@ class GleanMetric(GleanObject):
         self._set_definition(definition)
         self._set_description(self.definition)
 
-        self.is_client_info = "glean_client_info" in self.definition["send_in_pings"]
+        self.bq_prefix = None
+        if "glean_client_info" in self.definition["send_in_pings"]:
+            self.bq_prefix = "client_info"
+        elif "glean_internal_info" in self.definition["send_in_pings"]:
+            self.bq_prefix = "ping_info"
         if ping_names is not None:
             self._update_all_pings(ping_names)
 

@@ -44,7 +44,7 @@
   }
 </script>
 
-<!-- <style>
+<style>
   .schema-viewer {
     margin-top: 2rem;
     .schema-browser {
@@ -56,7 +56,7 @@
       margin-right: auto;
     }
   }
-</style> -->
+</style>
 
 <div class="schema-viewer">
   <PageTitle text={'Schema'} />

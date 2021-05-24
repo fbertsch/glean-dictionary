@@ -27,6 +27,8 @@
 	import { TabGroup, Tab, TabContent } from '$lib/tabs';
 	import PageTitle from '$lib/PageTitle.svelte';
 	import { pageState } from '$lib/state/stores';
+	import Commentary from "$lib/Commentary.svelte";
+	import Markdown from "$lib/Markdown.svelte";
 
 	// reset pageState
 	pageState.set({...$pageState, itemType: "metrics"})
@@ -48,20 +50,28 @@
 	<title>{app.app_name}</title>
 </svelte:head>
 
+{#if app.annotation && app.annotation.warning}
+    <AppAlert status="warning" message={app.annotation.warning} />
+  {/if}
+
 {#if app.prototype}
 	<AppAlert
 		status="warning"
 		message="This application is a prototype. The metrics and pings listed below may contain inconsistencies and testing strings."
 	/>
 {/if}
+
 <PageTitle text={app.canonical_app_name} />
 
 {#if app.deprecated}
 	<Pill message="Deprecated" bgColor="#4a5568" />
 {/if}
-<p>{app.app_description}</p>
+<Markdown text={app.app_description} inline={false} />
 
 <MetadataTable appName={app.app_name} item={app} schema={APPLICATION_DEFINITION_SCHEMA} />
+
+<h2>Commentary</h2>
+  <Commentary item={app} itemType={'application'} />
 
 <TabGroup
 	active={$pageState.itemType}
@@ -85,3 +95,9 @@
 		<ItemList itemType="app_ids" items={app.app_ids} appName={app.app_name} showFilter={false} />
 	</TabContent>
 </TabGroup>
+
+<style>
+	h2 {
+		@include text-title-xs;
+	}
+</style>

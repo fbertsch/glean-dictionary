@@ -1,8 +1,10 @@
-/node_modules/
-/static/build/
-/storybook-static/
+.DS_Store
+node_modules
+.svelte-kit
+/build
+/functions
 venv
 *.pyc
 __pycache__/
 .probe_cache
-.DS_Store
+static/data/*

@@ -1,17 +1,17 @@
 <script>
-  import { getContext, setContext } from "svelte";
+  import { setContext } from "svelte";
   import { writable } from "svelte/store";
   import { chunk } from "lodash";
 
-  import { getItemURL } from "../state/urls";
+  import { getItemURL } from "$lib/state/urls";
 
   import Pagination from "./Pagination.svelte";
   import FilterInput from "./FilterInput.svelte";
   import Markdown from "./Markdown.svelte";
   import Pill from "./Pill.svelte";
 
-  import { isExpired } from "../state/metrics";
-  import {pageState} from "../lib/state/stores"
+  import { isExpired } from "$lib/state/metrics";
+  import {pageState, updateURLState} from "../lib/state/stores"
   let DEFAULT_ITEMS_PER_PAGE = 20;
 
   export let appName;
@@ -27,39 +27,58 @@ let filteredItems;
   let currentPage = writable(1);
   setContext("currentPage", currentPage);
 
-  pageState.set({... $pageState, search: ""})
+  // pageState.set({... $pageState, search: ""})
 
-  const goToPage = (page, perPage = DEFAULT_ITEMS_PER_PAGE) => {
-    pagedItems =
-      filteredItems.length > 0
-        ? chunk([...filteredItems], perPage)[page - 1]
-        : [];
-  };
+  // const goToPage = (page, perPage = DEFAULT_ITEMS_PER_PAGE) => {
+  //   pagedItems =
+  //     filteredItems.length > 0
+  //       ? chunk([...filteredItems], perPage)[page - 1]
+  //       : [];
+  // };
 
-  $: {
-    if (paginated) {
-      goToPage($currentPage);
-    } else {
-      goToPage(1, filteredItems.length);
-    }
-  }
+  // $: {
+  //   if (paginated) {
+  //     goToPage($currentPage);
+  //   } else {
+  //     goToPage(1, filteredItems.length);
+  //   }
+  // }
 
   // re-filter items when showExpired or $search changes
-  $: {
-    const shownItems = $pageState.showExpired
-      ? items
-      : items.filter((item) => !isExpired(item.expires));
-    filteredItems = shownItems.filter((item) =>
-      item.name.includes($pageState.search)
-    );
-    // show the first page of result
+ // re-filter items when showExpired or search text changes
+ $: {
+    const search = $pageState.search || "";
+    // don't use $currentPage, because we don't want to call this reactively
+    // when paginating
     currentPage.set(1);
-    // even if currentPage is already 1, we need to manually call goToPage() to get the first page
-    goToPage(1);
+    const originMatch = (item) =>
+      item.origin && item.origin.includes(search.toLowerCase());
+    // filter on match either on name or on origin
+    filteredItems = items.filter(
+      (item) => item.name.includes(search) || originMatch(item)
+    );
+    // also filter out expired items (if we're not showing expired)
+    filteredItems = $pageState.showExpired
+      ? filteredItems
+      : filteredItems.filter((item) => !isExpired(item.expires));
   }
+  // update pagination when either pagination changes or filtered list changes
+  // (above)
+  $: {
+    const perPage = paginated ? DEFAULT_ITEMS_PER_PAGE : filteredItems.length;
+    pagedItems =
+      filteredItems.length > 0
+        ? chunk([...filteredItems], perPage)[$currentPage - 1]
+        : [];
+  }
+  const originClicked = (origin) => {
+    $pageState = { ...$pageState, search: origin };
+    // when the user clicks on an origin (library name), we want to persist a new state
+    updateURLState(true);
+  };
 </script>
 
-<!-- <style>
+<style>
   .item-browser {
     a {
       text-decoration: none;
@@ -107,7 +126,7 @@ let filteredItems;
       display: inline;
     }
   }
-</style> -->
+</style>
 
 {#if !items.length}
   <p>Currently, there are no {itemType} available for {items.name}</p>
@@ -150,7 +169,14 @@ let filteredItems;
               <div class="item-property">
                 <a
                   href={getItemURL(appName, itemType, item.name)}>{item.name}</a>
-                {#if isExpired(item.expires)}
+                  {#if item.origin && item.origin !== appName}
+                  <Pill
+                    message={item.origin}
+                    bgColor="#4a5568"
+                    clickable
+                    on:click={originClicked(item.origin)} />
+                {/if}
+                  {#if isExpired(item.expires)}
                   <Pill message="Expired" bgColor="#4a5568" />
                 {/if}
                 {#if item.deprecated}

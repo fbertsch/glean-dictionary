@@ -2,13 +2,15 @@
   export let links;
 </script>
 
-<!-- <style>
+<style>
+  div {
+    margin-left: $spacing-lg;
+  }
   ol {
     display: flex;
     li {
       @include text-title-3xs;
       font-weight: bold;
-      padding-bottom: $spacing-md;
       padding-left: $spacing-sm;
 
       .link-name {
@@ -19,13 +21,16 @@
       }
     }
   }
-</style> -->
+</style>
 
+<div>
 <ol>
   {#each links as link}
     <li>
       <a class="link-name" href={link.url}>{link.name} </a><span
-        class>{links.indexOf(link) === links.length - 1 ? '' : '/'}</span>
+        class>{links.indexOf(link) === links.length - 1 ? '' : '->'}</span>
     </li>
   {/each}
 </ol>
+
+</div>

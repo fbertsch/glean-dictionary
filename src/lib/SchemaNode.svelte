@@ -4,7 +4,7 @@
   export let parentFields = [];
 </script>
 
-<!-- <style>
+<style>
   p {
     margin: 0;
   }
@@ -20,7 +20,7 @@
       margin-left: $spacing-sm;
     }
   }
-</style> -->
+</style>
 
 <div style={node.visible ? '' : 'display: none;'}>
   <p class="node">

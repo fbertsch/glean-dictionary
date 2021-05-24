@@ -3,13 +3,16 @@
 import json
 import os
 import re
+import sys
 
 import glean
 import requests
 import stringcase
+import yaml
 
 OUTPUT_DIRECTORY = os.path.join("static", "data")
 ANNOTATIONS_URL = "https://mozilla.github.io/glean-annotations/api.json"
+NAMESPACES_URL = "https://raw.githubusercontent.com/mozilla/looker-hub/main/namespaces.yaml"
 
 
 def _serialize_sets(obj):
@@ -61,9 +64,14 @@ def etl_snake_case(line: str) -> str:
 
 # Pull down the annotations
 annotations_index = requests.get(ANNOTATIONS_URL).json()
+looker_namespaces = yaml.safe_load(requests.get(NAMESPACES_URL).text)
 
 # Then, get the apps we're using
 apps = [app for app in glean.GleanApp.get_apps()]
+
+if len(sys.argv) > 1:
+    apps = [app for app in apps if app.app_name in sys.argv[1:]]
+
 app_groups = {}
 for app in apps:
     if not app_groups.get(app.app_name):
@@ -71,9 +79,11 @@ for app in apps:
             "app_name": app.app_name,
             "app_description": app.app["app_description"],
             "canonical_app_name": app.app["canonical_app_name"],
+            "deprecated": app.app.get("deprecated", False),
             "url": app.app["url"],
             "notification_emails": app.app["notification_emails"],
             "app_ids": [],
+            "annotation": (annotations_index.get(app.app_name, {}).get("app")),
         }
     app_groups[app.app_name]["app_ids"].extend(
         [
@@ -82,6 +92,7 @@ for app in apps:
                 "description": app.app.get("description", app.app["app_description"]),
                 "channel": app.app.get("app_channel", "release"),
                 "deprecated": app.app.get("deprecated", False),
+                "prototype": app.app.get("prototype", False),
             }
         ]
     )
@@ -107,6 +118,9 @@ for (app_name, app_group) in app_groups.items():
         os.makedirs(directory, exist_ok=True)
 
     app_data = dict(app_group, pings=[], metrics=[])
+    # An application group is considered a prototype only if all its application ids are
+    if all([app_id.get("prototype") for app_id in app_group["app_ids"]]):
+        app_data["prototype"] = True
 
     app_metrics = {}
     metric_pings = dict(data=[])
@@ -128,26 +142,27 @@ for (app_name, app_group) in app_groups.items():
             if metric.identifier not in metric_identifiers_seen:
                 metric_identifiers_seen.add(metric.identifier)
 
+                base_definition = {
+                    "name": metric.identifier,
+                    "description": metric.description,
+                    "extra_keys": metric.definition["extra_keys"]
+                    if "extra_keys" in metric.definition
+                    else None,
+                    "type": metric.definition["type"],
+                    "expires": metric.definition["expires"],
+                }
+                if metric.definition["origin"] != app_name:
+                    base_definition.update({"origin": metric.definition["origin"]})
+
                 # metrics with associated pings
                 metric_pings["data"].append(
-                    {
-                        "name": metric.identifier,
-                        "description": metric.description,
-                        "pings": metric.definition["send_in_pings"],
-                        "type": metric.definition["type"],
-                        "expires": metric.definition["expires"],
-                    }
+                    dict(base_definition, pings=metric.definition["send_in_pings"])
                 )
 
-                app_data["metrics"].append(
-                    {
-                        "name": metric.identifier,
-                        "description": metric.description,
-                        "type": metric.definition["type"],
-                        "expires": metric.definition["expires"],
-                    }
-                )
+                # the summary of metrics
+                app_data["metrics"].append(base_definition)
 
+                # the full definition
                 app_metrics[metric.identifier] = dict(
                     metric.definition,
                     name=metric.identifier,
@@ -169,8 +184,8 @@ for (app_name, app_group) in app_groups.items():
             metric_type = metric.definition["type"]
             metric_name_snakecase = stringcase.snakecase(metric.identifier)
             metric_table_name = (
-                f"client_info.{metric_name_snakecase}"
-                if metric.is_client_info
+                f"{metric.bq_prefix}.{metric_name_snakecase}"
+                if metric.bq_prefix
                 else f"metrics.{metric_type}.{metric_name_snakecase}"
             )
             bigquery_names = dict(
@@ -191,18 +206,22 @@ for (app_name, app_group) in app_groups.items():
         for ping in app.get_pings():
             if ping.identifier not in ping_identifiers_seen:
                 ping_identifiers_seen.add(ping.identifier)
-
-                app_data["pings"].append(
-                    dict(
-                        ping.definition,
-                        variants=[],
-                        annotation=(
-                            annotations_index.get(ping.definition["origin"], {})
-                            .get("pings", {})
-                            .get(ping.identifier)
-                        ),
-                    )
+                ping_data = dict(
+                    ping.definition,
+                    variants=[],
+                    annotation=(
+                        annotations_index.get(ping.definition["origin"], {})
+                        .get("pings", {})
+                        .get(ping.identifier)
+                    ),
                 )
+                if (
+                    looker_namespaces.get(app_name)
+                    and looker_namespaces[app_name].get("glean_app")
+                    and looker_namespaces[app_name]["explores"].get(ping.identifier)
+                ):
+                    ping_data.update({"looker_explore": True})
+                app_data["pings"].append(ping_data)
 
             ping_data = next(pd for pd in app_data["pings"] if pd["name"] == ping.identifier)
 

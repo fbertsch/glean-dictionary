@@ -10,11 +10,11 @@
   $: dispatch("tabChanged", { active: $activeTab });
 </script>
 
-<!-- <style>
+<style>
   .tab-content {
     margin-top: $spacing-lg;
   }
-</style> -->
+</style>
 
 <div class="tabs">
   <slot name="tabs" />
