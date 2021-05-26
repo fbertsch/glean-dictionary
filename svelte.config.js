@@ -9,12 +9,12 @@ const config = {
 	preprocess: sveltePreprocess({
 		sourceMap: true,
 		defaults: {
-			  style: "scss",
-			},
+			style: 'scss'
+		},
 		scss: {
-			  prependData: `@import '@mozilla-protocol/core/protocol/css/protocol.css'; @import "src/app.scss";`,
-			},
-		}),
+			prependData: `@import "src/app.scss";`
+		}
+	})
 };
 
 export default config;

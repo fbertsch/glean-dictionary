@@ -1,3 +1,3 @@
 export function getEmailLink(email) {
-  return `mailto:${email}`;
+	return `mailto:${email}`;
 }

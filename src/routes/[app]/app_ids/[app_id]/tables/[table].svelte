@@ -1,31 +1,31 @@
 <script context="module">
-
-export const router = false;
-
 	export async function load({ page, fetch }) {
 		const tableName = page.params.table.replace(/\./g, '_');
+		const URLSearchParams = Object.fromEntries(page.query);
+
 		const res = await fetch(
 			`/data/${page.params.app}/tables/${page.params.app_id}/${tableName}.json`
 		);
-		const table = await res.json();
-		const app = page.params.app;
-		const search = page.query.get("search")
-		return {
-			props: { table, app, search }
-		};
+		if (res.ok) {
+			const table = await res.json();
+			const app = page.params.app;
+			return {
+				props: { table, app, URLSearchParams }
+			};
+		}
+		const { message } = await res.json();
+		return { error: new Error(message) };
 	}
 </script>
 
 <script>
-	export let table, app, search;
-	import SchemaViewer from '$lib/SchemaViewer.svelte';
-	import PageTitle from '$lib/PageTitle.svelte';
+	import SchemaViewer from '$lib/components/SchemaViewer.svelte';
+	import PageTitle from '$lib/components/PageTitle.svelte';
 
 	import { pageState } from '$lib/state/stores';
-	
-	if (search) {
-		pageState.set({... $pageState,search: search})
-	}
+
+	export let table, app, URLSearchParams;
+	$pageState = { ...$pageState, search: '', ...URLSearchParams };
 </script>
 
 <svelte:head>

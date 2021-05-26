@@ -1,10 +1,12 @@
 <script context="module">
 	export async function load({ page, fetch }) {
 		const res = await fetch(`/data/${page.params.app}/index.json`);
+		const URLSearchParams = Object.fromEntries(page.query);
+
 		if (res.ok) {
-		const app = await res.json();
+			const app = await res.json();
 			return {
-				props: { app }
+				props: { app, URLSearchParams }
 			};
 		}
 
@@ -14,36 +16,42 @@
 </script>
 
 <script>
-	export let app;
+	// components
+	import AppAlert from '$lib/components/AppAlert.svelte';
+	import ItemList from '$lib/components/ItemList.svelte';
+	import MetadataTable from '$lib/components/MetadataTable.svelte';
+	import Pill from '$lib/components/Pill.svelte';
+	import { TabGroup, Tab, TabContent } from '$lib/components/tabs';
+	import PageTitle from '$lib/components/PageTitle.svelte';
+	import Commentary from '$lib/components/Commentary.svelte';
+	import Markdown from '$lib/components/Markdown.svelte';
 
-	import { mapValues, pickBy } from "lodash";
-  	import { stringify} from "query-string";
-
-	import { APPLICATION_DEFINITION_SCHEMA } from '$lib/data/schemas';
-	import AppAlert from '$lib/AppAlert.svelte';
-	import ItemList from '$lib/ItemList.svelte';
-	import MetadataTable from '$lib/MetadataTable.svelte';
-	import Pill from '$lib/Pill.svelte';
-	import { TabGroup, Tab, TabContent } from '$lib/tabs';
-	import PageTitle from '$lib/PageTitle.svelte';
+	// state
 	import { pageState } from '$lib/state/stores';
-	import Commentary from "$lib/Commentary.svelte";
-	import Markdown from "$lib/Markdown.svelte";
 
-	// reset pageState
-	pageState.set({...$pageState, itemType: "metrics"})
-	
+	// formatters
+	import { mapValues, pickBy } from 'lodash';
+	import { stringify } from 'query-string';
+
+	// data
+	import { APPLICATION_DEFINITION_SCHEMA } from '$lib/data/schemas';
+
+	export let app, URLSearchParams;
+
+	// update pageState to match URL search params
+	$pageState = { ...$pageState, search: '', ...URLSearchParams };
+
 	function updatePath(pageState) {
 		const simplifiedState = mapValues(
-      		pickBy(pageState, (v) => (typeof v !== "string" && v) || v.length > 0),
-      		(v) => (typeof v === "boolean" ? +v : v)
-    	);
+			pickBy(pageState, (v) => (typeof v !== 'string' && v) || v.length > 0),
+			(v) => (typeof v === 'boolean' ? +v : v)
+		);
 		const query = stringify(simplifiedState);
-    	const path = `${window.location.pathname}${query ? `?${query}` : ""}`;
-    	window.history.replaceState(null, undefined, path);
+		const path = `${window.location.pathname}${query ? `?${query}` : ''}`;
+		window.history.replaceState(null, undefined, path);
 	}
 
-	$: typeof window !== "undefined" && updatePath($pageState);
+	$: typeof window !== 'undefined' && updatePath($pageState);
 </script>
 
 <svelte:head>
@@ -51,8 +59,8 @@
 </svelte:head>
 
 {#if app.annotation && app.annotation.warning}
-    <AppAlert status="warning" message={app.annotation.warning} />
-  {/if}
+	<AppAlert status="warning" message={app.annotation.warning} />
+{/if}
 
 {#if app.prototype}
 	<AppAlert
@@ -71,12 +79,12 @@
 <MetadataTable appName={app.app_name} item={app} schema={APPLICATION_DEFINITION_SCHEMA} />
 
 <h2>Commentary</h2>
-  <Commentary item={app} itemType={'application'} />
+<Commentary item={app} itemType={'application'} />
 
 <TabGroup
 	active={$pageState.itemType}
 	on:tabChanged={({ detail }) => {
-		pageState.set({... $pageState, itemType: detail.active, search: ""});
+		pageState.set({ ...$pageState, itemType: detail.active, search: '' });
 	}}
 >
 	<Tab key="metrics">Metrics</Tab>

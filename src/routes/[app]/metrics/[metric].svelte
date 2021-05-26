@@ -2,29 +2,39 @@
 	export async function load({ page, fetch }) {
 		const metricName = page.params.metric.replace(/\./g, '_');
 		const res = await fetch(`/data/${page.params.app}/metrics/data_${metricName}.json`);
-		const metric = await res.json();
-		const app = page.params.app;
 
-		return {
-			props: { metric, app }
-		};
+		if (res.ok) {
+			const metric = await res.json();
+			const app = page.params.app;
+
+			return {
+				props: { metric, app }
+			};
+		}
+		const { message } = await res.json();
+		return { error: new Error(message) };
 	}
 </script>
 
 <script>
-	export let metric, app;
+	// components
+	import AppVariantSelector from '$lib/components/AppVariantSelector.svelte';
+	import AuthenticatedLink from '$lib/components/AuthenticatedLink.svelte';
+	import AppAlert from '$lib/components/AppAlert.svelte';
+	import Commentary from '$lib/components/Commentary.svelte';
+	import HelpHoverable from '$lib/components/HelpHoverable.svelte';
+	import PageTitle from '$lib/components/PageTitle.svelte';
+	import MetadataTable from '$lib/components/MetadataTable.svelte';
+	import Markdown from '$lib/components/Markdown.svelte';
 
-	import AppVariantSelector from '$lib/AppVariantSelector.svelte';
-	import AuthenticatedLink from "$lib/AuthenticatedLink.svelte";
-	import AppAlert from '$lib/AppAlert.svelte'
-	import Commentary from '$lib/Commentary.svelte';
-	import HelpHoverable from '$lib/HelpHoverable.svelte';
-	import PageTitle from '$lib/PageTitle.svelte';
-	import MetadataTable from '$lib/MetadataTable.svelte';
-	import Markdown from '$lib/Markdown.svelte';
-	import { METRIC_DEFINITION_SCHEMA, METRIC_METADATA_SCHEMA } from '$lib/data/schemas';
+	// state
 	import { getBigQueryURL } from '$lib/state/urls';
 	import { isExpired } from '$lib/state/metrics';
+
+	// data
+	import { METRIC_DEFINITION_SCHEMA, METRIC_METADATA_SCHEMA } from '$lib/data/schemas';
+
+	export let metric, app;
 
 	let selectedAppVariant;
 	[selectedAppVariant] = metric.variants;
@@ -93,9 +103,10 @@
 {/if}
 
 {#if metric.origin !== app}
-<AppAlert
-  status="warning"
-  message={`This metric is defined by a library used by the application (__${metric.origin}__), rather than the application itself. For more details, see the definition.`} />
+	<AppAlert
+		status="warning"
+		message={`This metric is defined by a library used by the application (__${metric.origin}__), rather than the application itself. For more details, see the definition.`}
+	/>
 {/if}
 
 <PageTitle text={metric.name} />
@@ -120,75 +131,70 @@
 
 <h2>Metadata</h2>
 <MetadataTable appName={app} item={metric} schema={METRIC_METADATA_SCHEMA} />
-	
+
 <h2>Access</h2>
-	
-	{#if metric.variants.length > 1}
-		<AppVariantSelector bind:selectedAppVariant variants={metric.variants} />
-	{/if}
-	
-	{#if selectedAppVariant}
-		<table>
-			<col />
-			<col />
+
+{#if metric.variants.length > 1}
+	<AppVariantSelector bind:selectedAppVariant variants={metric.variants} />
+{/if}
+
+{#if selectedAppVariant}
+	<table>
+		<col />
+		<col />
+		<tr>
+			<td>
+				BigQuery
+				<HelpHoverable content={'The BigQuery representation of this metric.'} />
+			</td>
+			<td>
+				{#each selectedAppVariant.bigquery_names.stable_ping_table_names as [sendInPing, tableName]}
+					<div>
+						In
+						<a href={getBigQueryURL(app, selectedAppVariant.app_id, sendInPing)}>{tableName}</a>
+						<!-- Skip search string for event metrics as we can't directly lookup the columns in events tables -->
+						{#if selectedAppVariant.bigquery_names.metric_type !== 'event'}
+							as
+							<a
+								href={getBigQueryURL(
+									app,
+									selectedAppVariant.app_id,
+									sendInPing,
+									selectedAppVariant.bigquery_names.metric_table_name
+								)}
+							>
+								{selectedAppVariant.bigquery_names.metric_table_name}
+							</a>
+						{/if}
+					</div>
+				{/each}
+			</td>
+		</tr>
+		{#if getGlamUrl(selectedAppVariant)}
 			<tr>
 				<td>
-					BigQuery
-					<HelpHoverable content={'The BigQuery representation of this metric.'} />
+					GLAM
+					<HelpHoverable
+						content={'View this metric in the Glean Aggregated Metrics (GLAM) dashboard'}
+						link={'https://docs.telemetry.mozilla.org/cookbooks/glam.html'}
+					/>
 				</td>
 				<td>
-					{#each selectedAppVariant.bigquery_names.stable_ping_table_names as [sendInPing, tableName]}
-						<div>
-							In
-							<a href={getBigQueryURL(app, selectedAppVariant.app_id, sendInPing)}>{tableName}</a>
-							<!-- Skip search string for event metrics as we can't directly lookup the columns in events tables -->
-							{#if selectedAppVariant.bigquery_names.metric_type !== 'event'}
-								as
-								<a
-									href={getBigQueryURL(
-										app,
-										selectedAppVariant.app_id,
-										sendInPing,
-										selectedAppVariant.bigquery_names.metric_table_name
-									)}
-								>
-									{selectedAppVariant.bigquery_names.metric_table_name}
-								</a>
-							{/if}
-						</div>
-					{/each}
+					<AuthenticatedLink href={getGlamUrl(selectedAppVariant)}>
+						{selectedAppVariant.bigquery_names.glam_etl_name}
+					</AuthenticatedLink>
 				</td>
 			</tr>
-			{#if getGlamUrl(selectedAppVariant)}
-				<tr>
-					<td>
-						GLAM
-						<HelpHoverable
-						content={'View this metric in the Glean Aggregated Metrics (GLAM) dashboard'}
-						link={'https://docs.telemetry.mozilla.org/cookbooks/glam.html'} />
-					</td>
-					<td>
-						<AuthenticatedLink href={getGlamUrl(selectedAppVariant)}>
-							{selectedAppVariant.bigquery_names.glam_etl_name}
-						  </AuthenticatedLink>
-					</td>
-				</tr>
-			{/if}
-		</table>
-	{/if}
+		{/if}
+	</table>
+{/if}
 
-	<h2>Commentary</h2>
-	<Commentary item={metric} itemType={'metric'} />
-
-	
+<h2>Commentary</h2>
+<Commentary item={metric} itemType={'metric'} />
 
 <style>
 	@include metadata-table;
 	h2 {
 		@include text-title-xs;
-	}
-	table {
-		/* min-width: 50%;
-		max-width: 60%; */
 	}
 </style>

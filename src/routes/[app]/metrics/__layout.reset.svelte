@@ -1,52 +1,25 @@
+<!-- we use __layout.reset.svelte instead of __layout.svelte here because we need breadcrumb links to dynamically change -->
 <script context="module">
+	import { getBreadcrumbLinks } from '$lib/state/urls';
+
 	export async function load({ page }) {
-		const { app, metric, appId, ping, table } = await page.params;
-
-		const links = [
-			...(app
-				? [
-						{ url: '/', name: 'apps' },
-						{ url: `/${app}/`, name: app }
-				  ]
-				: []),
-			...(appId ? [{ url: `/${app}/app_ids/${appId}/`, name: appId }] : []),
-			...(ping ? [{ url: `/${app}/pings/${ping}/`, name: ping }] : []),
-			...(metric
-				? [
-						{
-							url: `/${app}/metrics/${metric}/`,
-							name: metric
-						}
-				  ]
-				: []),
-			...(table
-				? [
-						{
-							url: `/${app}/app_ids/${appId}/tables/${table}/`,
-							name: table
-						}
-				  ]
-				: [])
-		];
-
-		return { props: { links } };
+		return { props: { links: getBreadcrumbLinks(page.params) } };
 	}
 </script>
 
 <script>
+	import Header from '$lib/components/Header.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import BreadCrumb from '$lib/components/BreadCrumb.svelte';
+
 	export let links;
-	import BreadCrumb from '$lib/BreadCrumb.svelte';
-	import Header from '$lib/Header.svelte';
-	import Footer from '$lib/Footer.svelte';
 </script>
 
-
 <Header />
-
 <BreadCrumb {links} />
 <main class="mzp-c-emphasis-box"><slot /></main>
-<Footer/>
+<Footer />
 
 <style>
-	@import "src/app.scss"
+	@import 'src/app.scss';
 </style>

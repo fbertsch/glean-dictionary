@@ -4,7 +4,6 @@
 
 		if (res.ok) {
 			const apps = await res.json();
-			console.log("Starting 3");
 			apps.sort((a, b) =>
 				a.canonical_app_name.toLowerCase() > b.canonical_app_name.toLowerCase() ? 1 : -1
 			);
@@ -24,8 +23,11 @@
 	export let apps;
 	export let shownApps;
 
-	import FilterInput from '$lib/FilterInput.svelte';
-	import Markdown from "$lib/Markdown.svelte";
+	// components
+	import FilterInput from '$lib/components/FilterInput.svelte';
+	import Markdown from '$lib/components/Markdown.svelte';
+
+	// state
 	import { pageState } from '$lib/state/stores';
 
 	const appLogos = {
@@ -67,142 +69,125 @@
 		}
 		return appLogos.others;
 	}
-function isPlatform(app) {
-	console.log(app)
-    if (
-      app.includes("iOS") ||
-      app.includes("Android") ||
-      app.includes("Amazon")
-    ) {
-      return true;
-    }
-    return false;
-  }
-  function getPlatformLogo(app) {
-    if (app.includes("iOS")) {
-      return "/img/app-logos/platform-apple.jpg";
-    }
-    if (app.includes("Android")) {
-      return "/img/app-logos/platform-android.png";
-    }
-    if (app.includes("Amazon")) {
-      return "/img/app-logos/platform-amazon.png";
-    }
-    return undefined;
-  }
-  let showDeprecated = false;
+
+	let showDeprecated = false;
+
 	// reset search
-	pageState.set({... $pageState, search: ""})
-	
-	$: shownApps = apps.filter(a => a.app_name.includes($pageState.search))
+	pageState.set({ ...$pageState, search: '' });
+
+	$: shownApps = apps.filter((a) => a.app_name.includes($pageState.search));
 </script>
 
 <svelte:head>
 	<title>Glean Dictionary</title>
 </svelte:head>
 
-
 <div class="mzp-c-emphasis-box mzp-t-dark hero-box">
-	<h5>The Glean Dictionary documents the data collected by Mozilla projects that use <a href="https://mozilla.github.io/glean/">Glean</a>.</h5>
-	<p>Select a project to browse its data catalog. If you have questions, please ask in the <a
-		href="https://chat.mozilla.org/#/room/#glean-dictionary:mozilla.org">#glean-dictionary</a> channel on Mozilla's instance of Matrix.</p>
-
-	</div>
+	<h5>
+		The Glean Dictionary documents the data collected by Mozilla projects that use <a
+			href="https://mozilla.github.io/glean/">Glean</a
+		>.
+	</h5>
+	<p>
+		Select a project to browse its data catalog. If you have questions, please ask in the <a
+			href="https://chat.mozilla.org/#/room/#glean-dictionary:mozilla.org">#glean-dictionary</a
+		> channel on Mozilla's instance of Matrix.
+	</p>
+</div>
 {#if shownApps}
-
 	<div class="mzp-c-emphasis-box">
-			<div class="app-filter">
-				<FilterInput placeHolder="Search for an application" width="90%"/>
-				<span id="deprecation-checkbox">
-					<label>
-					  <input type="checkbox" bind:checked={showDeprecated} />
-					  Show deprecated applications
-					</label>
-				  </span>
-			</div>
+		<div class="app-filter">
+			<FilterInput placeHolder="Search for an application" width="90%" />
+			<span id="deprecation-checkbox">
+				<label>
+					<input type="checkbox" bind:checked={showDeprecated} />
+					Show deprecated applications
+				</label>
+			</span>
+		</div>
 		<div class="app-list">
-		{#each shownApps as app}
-			<div class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
-				<a class="mzp-c-card-block-link" href={app.app_name} id="media-block">
-					<img
+			{#each shownApps as app}
+				<div class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
+					<a class="mzp-c-card-block-link" href={app.app_name} id="media-block">
+						<img
 							class="mzp-c-card-image"
 							src={getAppLogo(app.app_name)}
 							alt="${app.canonical_app_name} Logo"
 						/>
-					<div class="mzp-c-card-content">
-						<h6 class="mzp-c-card-title">{app.canonical_app_name}</h6>
-						<p>
-						<Markdown text={app.app_description} /></p>
-					</div>
-				</a>
-			</div>
-		{/each}
-	</div>
+						<div class="mzp-c-card-content">
+							<h6 class="mzp-c-card-title">{app.canonical_app_name}</h6>
+							<p>
+								<Markdown text={app.app_description} />
+							</p>
+						</div>
+					</a>
+				</div>
+			{/each}
+		</div>
 	</div>
 {/if}
 
 <style>
-@import "src/app.scss";
-.hero-box {
-	text-align: center;
-}
+	.hero-box {
+		text-align: center;
+	}
 
-.mzp-c-card-image {
-    width: 100%;
-    background-color: $color-light-gray-20;
-}
+	.mzp-c-card-image {
+		width: 100%;
+		background-color: $color-light-gray-20;
+	}
 
-.app-filter {
-    margin: $spacing-sm;;
-    text-align: center;
-    #deprecation-checkbox {
-        display: block;
-        text-align: right;
-        label {
-            display: inline;
-        }
-    }
-}
+	.app-filter {
+		margin: $spacing-sm;
+		text-align: center;
+		#deprecation-checkbox {
+			display: block;
+			text-align: right;
+			label {
+				display: inline;
+			}
+		}
+	}
 
-.app-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    grid-gap: $spacing-md;
-}
+	.app-list {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+		grid-gap: $spacing-md;
+	}
 
-.corner-flag {
-    border-top: 80px solid black;
-    border-right: 80px solid transparent;
-    position: absolute;
-    top: 1px;
-    left: 1px;
-}
-.platform-logo {
-    position: absolute;
-    top: 7px;
-    left: 7px;
+	.corner-flag {
+		border-top: 80px solid black;
+		border-right: 80px solid transparent;
+		position: absolute;
+		top: 1px;
+		left: 1px;
+	}
+	.platform-logo {
+		position: absolute;
+		top: 7px;
+		left: 7px;
 
-    width: 30px;
-    background-color: inherit;
-}
-#card {
-    max-width: 230px;
-    #media-block {
-        &:hover {
-            border-radius: 15px;
-        }
-    }
-    #media-wrapper {
-        border-radius: 15px;
-        #logo-img {
-            width: 230px;
-        }
-    }
-}
-#card-description {
-    font-size: 14px;
-}
-p {
-	@include text-body-sm;
-}
+		width: 30px;
+		background-color: inherit;
+	}
+	#card {
+		max-width: 230px;
+		#media-block {
+			&:hover {
+				border-radius: 15px;
+			}
+		}
+		#media-wrapper {
+			border-radius: 15px;
+			#logo-img {
+				width: 230px;
+			}
+		}
+	}
+	#card-description {
+		font-size: 14px;
+	}
+	p {
+		@include text-body-sm;
+	}
 </style>
