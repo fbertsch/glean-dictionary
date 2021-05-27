@@ -1,6 +1,4 @@
 <script>
-	import { fade } from 'svelte/transition';
-
 	import WarningIcon from '../icons/WarningIcon.svelte';
 	import ErrorIcon from '../icons/ErrorIcon.svelte';
 	import SuccessIcon from '../icons/SuccessIcon.svelte';
@@ -17,7 +15,7 @@
 	};
 </script>
 
-<div class="mzp-c-notification-bar mzp-t-{status} {status}" transition:fade>
+<div class="mzp-c-notification-bar mzp-t-{status} {status}">
 	<svelte:component this={icons[status]} />
 	<div class="alert-text">
 		<Markdown text={message} inline={true} />

@@ -1,9 +1,9 @@
 <script>
-  import ItemList from "../src/components/ItemList.svelte";
+	import ItemList from '../src/components/ItemList.svelte';
 
-  export let items;
-  export let itemType;
-  export let appName;
+	export let items;
+	export let itemType;
+	export let appName;
 </script>
 
 <ItemList {items} {itemType} {appName} />

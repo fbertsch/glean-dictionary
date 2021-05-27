@@ -1,6 +1,8 @@
 <script>
 	import HelpHoverable from './HelpHoverable.svelte';
-	import { isNull, isUndefined } from 'lodash';
+	import pkg from 'lodash';
+
+	const { isNull, isUndefined } = pkg;
 
 	export let appName = '';
 	export let schema = [];

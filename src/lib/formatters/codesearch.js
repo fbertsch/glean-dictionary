@@ -1,4 +1,5 @@
-import { camelCase, upperFirst, snakeCase } from 'lodash';
+import pkg from 'lodash';
+const { camelCase, upperFirst, snakeCase } = pkg;
 
 const searchfoxMap = {
 	fenix: 'fenix',

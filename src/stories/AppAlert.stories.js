@@ -1,9 +1,9 @@
-import AppAlert from "./AppAlert.svelte";
+import AppAlert from './AppAlert.svelte';
 
 export default {
-  title: "App Alert",
+	title: 'App Alert'
 };
 
 export const Text = () => ({
-  Component: AppAlert,
+	Component: AppAlert
 });

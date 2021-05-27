@@ -40,7 +40,6 @@
 	<Pill message="Deprecated" bgColor="#4a5568" />
 {/if}
 
-
 <MetadataTable appName={app} item={appId} schema={APPLICATION_ID_DEFINITION_SCHEMA} />
 
 <style>

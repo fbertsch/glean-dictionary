@@ -12,7 +12,8 @@
 	import { isExpired } from '$lib/state/metrics';
 	import { pageState, updateURLState } from '$lib/state/stores';
 
-	import { chunk } from 'lodash';
+	import pkg from 'lodash';
+	const { chunk } = pkg;
 
 	let DEFAULT_ITEMS_PER_PAGE = 20;
 

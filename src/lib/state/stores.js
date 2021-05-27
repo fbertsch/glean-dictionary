@@ -1,11 +1,10 @@
-import { mapValues, pickBy } from 'lodash';
+import pkg from 'lodash';
+const { mapValues, pickBy } = pkg;
+
 import { stringify } from 'query-string';
 import { get, writable } from 'svelte/store';
 
-export const pageState = writable({
-	itemType: 'metrics',
-	showExpired: 1
-});
+export const pageState = writable({ itemType: 'metrics', showExpired: 1 });
 
 // synchronizes url state with page state
 export const updateURLState = (push = false) => {

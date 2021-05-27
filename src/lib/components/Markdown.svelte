@@ -4,7 +4,8 @@
 	// weird problems with jest and storyshots (probably because
 	// of how it imports/compiles ES modules). this is the only
 	// workaround I found
-	import { use, parse, parseInline } from 'marked';
+	import pkg from 'marked';
+	const { use, parseInline, parse } = pkg;
 
 	const renderer = {
 		list(body, ordered, start) {

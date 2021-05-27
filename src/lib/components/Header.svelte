@@ -5,21 +5,15 @@
 		>
 		<a href="/"><h4>Dictionary</h4></a>
 	</div>
-	
-<div class="socials">
-	<img src="/img/mozilla.png" alt="Mozilla Logo" class="mozilla-logo"/>
-	<!-- <div class="mzp-c-wordmark mzp-t-wordmark-lg mzp-t-product-mozilla">
-		Mozilla
-	  </div> -->
-	</div>
+	<img src="/img/mozilla.png" alt="Mozilla Logo" class="mozilla-logo" />
 </div>
 
 <style>
-	.socials {
-		width: 8%;
-		margin: 4px 8px;
+	.mozilla-logo {
+		width: 100px;
+		margin: 6px;
 		position: absolute;
-    	right: 1%;
+		right: $spacing-sm;
 	}
 	.mzp-c-navigation {
 		background: $color-black;

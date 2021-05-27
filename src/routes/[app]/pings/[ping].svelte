@@ -18,7 +18,7 @@
 	// components
 	import AppAlert from '$lib/components/AppAlert.svelte';
 	import AppVariantSelector from '$lib/components/AppVariantSelector.svelte';
-	import Commentary from '$lib/components/ommentary.svelte';
+	import Commentary from '$lib/components/Commentary.svelte';
 	import HelpHoverable from '$lib/components/HelpHoverable.svelte';
 	import ItemList from '$lib/components/ItemList.svelte';
 	import MetadataTable from '$lib/components/MetadataTable.svelte';

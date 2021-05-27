@@ -26,7 +26,7 @@
 	// components
 	import FilterInput from '$lib/components/FilterInput.svelte';
 	import Markdown from '$lib/components/Markdown.svelte';
-
+	import CheckboxToggle from '$lib/components/CheckboxToggle.svelte';
 	// state
 	import { pageState } from '$lib/state/stores';
 
@@ -81,7 +81,6 @@
 <svelte:head>
 	<title>Glean Dictionary</title>
 </svelte:head>
-
 <div class="mzp-c-emphasis-box mzp-t-dark hero-box">
 	<h5>
 		The Glean Dictionary documents the data collected by Mozilla projects that use <a
@@ -98,30 +97,31 @@
 	<div class="mzp-c-emphasis-box">
 		<div class="app-filter">
 			<FilterInput placeHolder="Search for an application" width="90%" />
-			<span id="deprecation-checkbox">
-				<label>
-					<input type="checkbox" bind:checked={showDeprecated} />
-					Show deprecated applications
-				</label>
-			</span>
+			<div class="checkbox-toggle">
+				<CheckboxToggle toggle={showDeprecated} />
+				<p>Show deprecated applications</p>
+			</div>
 		</div>
+
 		<div class="app-list">
 			{#each shownApps as app}
-				<div class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
-					<a class="mzp-c-card-block-link" href={app.app_name} id="media-block">
-						<img
-							class="mzp-c-card-image"
-							src={getAppLogo(app.app_name)}
-							alt="${app.canonical_app_name} Logo"
-						/>
-						<div class="mzp-c-card-content">
-							<h6 class="mzp-c-card-title">{app.canonical_app_name}</h6>
-							<p>
-								<Markdown text={app.app_description} />
-							</p>
-						</div>
-					</a>
-				</div>
+				{#if showDeprecated || !app.deprecated}
+					<div class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
+						<a class="mzp-c-card-block-link" href={app.app_name} id="media-block">
+							<img
+								class="mzp-c-card-image"
+								src={getAppLogo(app.app_name)}
+								alt="${app.canonical_app_name} Logo"
+							/>
+							<div class="mzp-c-card-content">
+								<h6 class="mzp-c-card-title">{app.canonical_app_name}</h6>
+								<p>
+									<Markdown text={app.app_description} />
+								</p>
+							</div>
+						</a>
+					</div>
+				{/if}
 			{/each}
 		</div>
 	</div>
@@ -139,12 +139,14 @@
 
 	.app-filter {
 		margin: $spacing-sm;
-		text-align: center;
-		#deprecation-checkbox {
-			display: block;
-			text-align: right;
-			label {
-				display: inline;
+		.checkbox-toggle {
+			display: flex;
+			justify-content: flex-end;
+
+			p {
+				@include text-body-xs;
+				margin-bottom: $spacing-sm;
+				margin-left: $spacing-xs;
 			}
 		}
 	}

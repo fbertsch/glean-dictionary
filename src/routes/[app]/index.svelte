@@ -30,7 +30,8 @@
 	import { pageState } from '$lib/state/stores';
 
 	// formatters
-	import { mapValues, pickBy } from 'lodash';
+	import pkg from 'lodash';
+	const { mapValues, pickBy } = pkg;
 	import { stringify } from 'query-string';
 
 	// data
@@ -55,7 +56,7 @@
 </script>
 
 <svelte:head>
-	<title>{app.app_name}</title>
+	<title>{app.canonical_app_name}</title>
 </svelte:head>
 
 {#if app.annotation && app.annotation.warning}
